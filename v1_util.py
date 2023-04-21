@@ -1,5 +1,5 @@
 from    enum    import  IntEnum
-from    json    import  loads
+from    json    import  dumps, loads
 import  polars  as      pl
 from    time    import  time
 
@@ -68,6 +68,10 @@ if __name__ == "__main__":
     t0 = time()
 
     term_days = get_term_days("HO", "2018-01-01", "2024-01-01")
+
+    for row in term_days[-1]:
+
+        print(row)
 
     print(f"{time() - t0:0.1f}s")
 
