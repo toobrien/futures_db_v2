@@ -9,33 +9,7 @@ from    typing          import  List
 DB = connect("../data/futures.db")
 
 
-def to_pq(file: str, recs: List):
-
-    t0 = time()
-    fn = "to_pq"
-    
-    date    = pa.array([ rec[0] for rec in recs ])
-    month   = pa.array([ rec[1] for rec in recs ])
-    year    = pa.array([ rec[2] for rec in recs ])
-    open    = pa.array([ rec[3] if rec[3] != "NULL" else None for rec in recs ])
-    high    = pa.array([ rec[4] if rec[4] != "NULL" else None for rec in recs ])
-    low     = pa.array([ rec[5] if rec[5] != "NULL" else None for rec in recs ])
-    settle  = pa.array([ rec[6] for rec in recs ])
-    volume  = pa.array([ rec[7] if rec[7] != "NULL" else None for rec in recs ])
-    oi      = pa.array([ rec[8] if rec[8] != "NULL" else None for rec in recs ])
-    dte     = pa.array([ rec[9] for rec in recs ])
-
-    table   = pa.table(
-                        [ date, month, year, open, high, low, settle, volume, oi, dte ],
-                        names = [ "date", "month", "year", "open", "high", "low", "settle", "volume", "oi", "dte" ]
-                    )
-
-    pq.write_table(table, file)
-
-    print(f"{fn:15}{time() - t0:0.1f}s")
-
-
-def get_all_futs():
+def get_futs():
 
     t0  = time()
     fn  = "get_all_futs"
@@ -67,7 +41,7 @@ def get_all_futs():
     return recs
 
 
-def get_all_opts():
+def get_opts():
 
     t0  = time()
     fn  = "get_all_opts"
@@ -123,8 +97,14 @@ def futs_to_pq(file: str, recs: List):
     dte         = pa.array([ rec[12] if type(rec[12]) is int else None for rec in recs ])
 
     table   = pa.table(
-                        [ contract_id, exchange, name, month, year, date, open, high, low, settle, volume, oi, dte ],
-                        names = [ "contract_id", "exchange", "name", "month", "year", "date", "open", "high", "low", "settle", "volume", "oi", "dte" ]
+                        [ 
+                            contract_id, exchange, name, month, year, date, 
+                            open, high, low, settle, volume, oi, dte
+                        ],
+                        names = [ 
+                            "contract_id", "exchange", "name", "month", "year", "date",
+                            "open", "high", "low", "settle", "volume", "oi", "dte"
+                        ]
                     )
 
     pq.write_table(table, file)
@@ -186,9 +166,9 @@ def from_pq(file: str):
 
 if __name__ == "__main__":
     
-    recs = get_all_futs()
+    recs = get_futs()
     futs_to_pq("futs.parquet", recs)
     
-    recs = get_all_opts()
+    recs = get_opts()
     opts_to_pq("opts.parquet", recs)
 

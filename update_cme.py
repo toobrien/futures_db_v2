@@ -10,12 +10,20 @@ from    typing      import  List
 CONFIG              = loads(open("./config.json", "r").read())
 CONTRACT_SETTINGS   = loads(open("./contract_settings.json", "r").read())
 DATE_FMT            = "%Y-%m-%d"
-ENABLED_CONTRACTS   = {
+ENABLED_FUTS        = {
                         settings["globex"] : settings
                         for _, settings in CONTRACT_SETTINGS.items()
                         if "globex" in settings
                     }
-CALENDAR            = {
+ENABLED_OPTS        = {
+                        definition["opts"]: {
+                            "globex":   definition["globex"], 
+                            "exchange": definition["exchange"]
+                        }
+                        for _, definition in CONTRACT_SETTINGS.items()
+                        if "opts" in definition
+                    }
+MONTHS              = {
                         1: "F",
                         2: "G",
                         3: "H",
@@ -99,6 +107,8 @@ EXPECTED_COLS = [
 
 def insert_futs_rows(futs_db: pl.DataFrame, rows: List):
 
+    t0 = time()
+
     recs = []
     rows = reader(rows)
     
@@ -106,12 +116,12 @@ def insert_futs_rows(futs_db: pl.DataFrame, rows: List):
 
     for row in rows:
 
-        if row[4] != "FUT" or row[1] not in ENABLED_CONTRACTS:
+        if row[4] != "FUT" or row[1] not in ENABLED_FUTS:
 
             continue
 
         symbol      = row[1]
-        exchange    = ENABLED_CONTRACTS[symbol]["exchange"]
+        exchange    = ENABLED_FUTS[symbol]["exchange"]
         delivery    = row[5]
         year        = delivery[0:4]
         month       = None
@@ -120,15 +130,15 @@ def insert_futs_rows(futs_db: pl.DataFrame, rows: List):
 
         if len(delivery) == 6:
 
-            month = CALENDAR[int(delivery[4:])]
+            month = MONTHS[int(delivery[4:])]
 
         else:
 
-            month = CALENDAR[int(delivery[4:6])]
+            month = MONTHS[int(delivery[4:6])]
 
         # propagate settle for contracts taht didn't trade
 
-        scale = ENABLED_CONTRACTS[symbol]["scale"]
+        scale = ENABLED_FUTS[symbol]["scale"]
 
         id          = f"{exchange}_{symbol}{month}{year}"
         date        = row[0]
@@ -159,20 +169,77 @@ def insert_futs_rows(futs_db: pl.DataFrame, rows: List):
             ]
         )
 
-    pass
+    print(f"{'update_cme.insert_fut_rows':30}{time() - t0:0.1f}s")
 
 
 def insert_opts_rows(opts_db: pl.DataFrame, rows: List):
 
-    pass
+    t0 = time()
+
+    recs = []
+    rows = reader(rows)
+    
+    next(rows)  # skip header
+
+    for row in rows:
+
+        ul_symbol   = row[25]
+        con_type    = row[4]
+
+        if ul_symbol in ENABLED_OPTS and con_type == "OOF":
+
+            ul_exchange = ENABLED_OPTS[ul_symbol]["exchange"]
+            ul_symbol   = ENABLED_OPTS[ul_symbol]["globex"]
+
+            date                = row[0]
+            name                = row[1]
+            strike              = float(row[3])
+            expiry              = row[6]
+            call                = int(row[7])
+            last_traded         = row[10]
+            settle              = float(row[13]) if row[13] != "" else None
+            settle_delta        = float(row[14]) if row[14] != "" else None
+            high_limit          = float(row[15]) if row[15] != "" else None
+            low_limit           = float(row[16]) if row[16] != "" else None
+            high_bid            = float(row[19]) if row[19] != "" else None
+            low_bid             = float(row[20]) if row[20] != "" else None
+            previous_volume     = int(row[21])   if row[21] != "" else None
+            previous_interest   = int(row[22])   if row[22] != "" else None
+            underlying_month    = MONTHS[int(row[27][-2:])]
+            underlying_year     = row[27][0:4]
+            underlying_id       = f"{ul_exchange}_{ul_symbol}{underlying_month}{underlying_year}"
+
+            recs.append(
+                [
+                    date,
+                    name,
+                    strike,
+                    expiry,
+                    call,
+                    last_traded,
+                    settle,
+                    settle_delta,
+                    high_limit,
+                    low_limit,
+                    high_bid,
+                    low_bid,
+                    previous_volume,
+                    previous_interest,
+                    ul_symbol,
+                    ul_exchange,
+                    underlying_id
+                ]
+            )
+
+    print(f"{'update_cme.insert_opt_rows':30s}{time() - t0:0.1f}")
 
 
 def update(date: str, new: bool):
 
     t0 = time()
 
-    futs_db = pl.read_parquet(CONFIG["futs_db"])
-    #opts_db = pl.read_parquet(CONFIG["opts_db"])
+    #futs_db = pl.read_parquet(CONFIG["futs_db"])
+    opts_db = pl.read_parquet(CONFIG["opts_db"])
     files   = CONFIG["cme_files_new"]
 
     if not new:
@@ -198,8 +265,8 @@ def update(date: str, new: bool):
 
             print(f"error: unexpected column format in {file}")
 
-        insert_futs_rows(futs_db, rows)
-        #insert_opts_rows(opts_db, rows)
+        #insert_futs_rows(futs_db, rows)
+        insert_opts_rows(opts_db, rows)
 
         pass
 
