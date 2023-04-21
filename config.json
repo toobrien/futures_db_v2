@@ -14,5 +14,6 @@
         "comex.settle.{0}.s.csv",
         "nymex.settle.{0}.s.csv"
     ],
-    "cboe_url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt={0}"
+    "cboe_settlements_url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt={0}",
+    "vx_url":               "https://cdn.cboe.com/data/us/futures/market_statistics/historical_data/VX/VX_{0}.csv"
 }

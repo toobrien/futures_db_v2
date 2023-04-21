@@ -16,15 +16,15 @@ from    sys         import argv
 
 if __name__ == "__main__":
 
-    cme_date    = datetime.strftime(datetime.today(), "%Y-%m-%d")
-    new         = True
+    date    = datetime.strftime(datetime.today(), "%Y-%m-%d")
+    new     = True
 
     if len(argv) > 1:
 
-        cme_date    = argv[1]
-        new         = False
+        date    = argv[1]
+        new     = False
 
-    cboe_date = cme_date.replace("-", "")
+    cme_date = date.replace("-", "")
 
-    update_cboe.update(cboe_date)
+    #update_cboe.update(date)
     update_cme.update(cme_date, new)
