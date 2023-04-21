@@ -26,5 +26,5 @@ if __name__ == "__main__":
 
     cme_date = date.replace("-", "")
 
-    #update_cboe.update(date)
+    update_cboe.update(date)
     update_cme.update(cme_date, new)
