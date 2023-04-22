@@ -64,25 +64,3 @@ def get_term_days(
     term_days.append(cur_day)
 
     return term_days
-
-
-if __name__ == "__main__":
-
-    t0 = time()
-
-    symbol  = argv[1]
-    start   = argv[2]
-    end     = argv[3]
-
-    term_days = get_term_days(symbol, start, end)
-
-    # check records for most recent day
-
-    for row in term_days[-1]:
-
-        print(row)
-
-    print(f"num_days: {len(term_days)}")
-    print(f"{time() - t0:0.1f}s")
-
-    pass
