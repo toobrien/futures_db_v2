@@ -1,4 +1,3 @@
-from    json            import  dumps, loads
 import  pyarrow         as      pa
 import  pyarrow.parquet as      pq
 from    sqlite3         import  connect

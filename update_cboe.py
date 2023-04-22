@@ -1,13 +1,12 @@
-from    csv         import  reader
-from    datetime    import  datetime
-from    json        import  loads
-import  polars      as      pl
-from    requests    import  get
-from    time        import  time
+from    config              import  CONFIG
+from    contract_settings   import  CONTRACT_SETTINGS
+from    csv                 import  reader
+from    datetime            import  datetime
+import  polars              as      pl
+from    requests            import  get
+from    time                import  time
 
 
-CONFIG              = loads(open("./config.json", "r").read())
-CONTRACT_SETTINGS   = loads(open("./contract_settings.json", "r").read())
 DATE_FMT            = "%Y-%m-%d"
 ENABLED_FUTS        = {
                         settings["globex"] : settings
@@ -184,7 +183,7 @@ def update(date: str):
     )
     
     futs_db.extend(cols)
-    futs_db = futs_db.unique(maintain_order = True)
+    futs_db = futs_db.unique(maintain_order = True).sort( [ "contract_id", "date" ] )
     futs_db.write_parquet(CONFIG["futs_db"])
 
-    print(f"{'update_cboe.update':30}{time() - t0:0.1f}")
+    print(f"{'update_cboe.update':30}{'all':30}{time() - t0:0.1f}")

@@ -1,10 +1,10 @@
+from    config  import  CONFIG
 from    enum    import  IntEnum
-from    json    import  loads
 import  polars  as      pl
+from    sys     import  argv
 from    time    import  time
 
 
-CONFIG  = loads(open("./config.json", "r").read())
 V1_FUTS = None
 
 
@@ -34,7 +34,7 @@ def get_term_days(
                                 (pl.col("date") < end)     & 
                                 (pl.col("date") >= start)
                             ).sort(
-                                [ "date", "month", "year" ]
+                                [ "date", "year", "month" ]
                             )
     
     terms = filtered.select(
@@ -70,7 +70,13 @@ if __name__ == "__main__":
 
     t0 = time()
 
-    term_days = get_term_days("VX", "2018-01-01", "2024-01-01")
+    symbol  = argv[1]
+    start   = argv[2]
+    end     = argv[3]
+
+    term_days = get_term_days(symbol, start, end)
+
+    # check records for most recent day
 
     for row in term_days[-1]:
 

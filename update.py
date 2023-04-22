@@ -2,7 +2,7 @@ from    datetime    import datetime
 import  update_cboe
 import  update_cme
 from    sys         import argv
-
+from    time        import time
 
 # example usage:
 #
@@ -16,6 +16,7 @@ from    sys         import argv
 
 if __name__ == "__main__":
 
+    t0      = time()
     date    = datetime.strftime(datetime.today(), "%Y-%m-%d")
     new     = True
 
@@ -28,3 +29,5 @@ if __name__ == "__main__":
 
     update_cboe.update(date)
     update_cme.update(cme_date, new)
+
+    print(f"{'update':30s}{date:30s}{time() - t0:0.1f}")

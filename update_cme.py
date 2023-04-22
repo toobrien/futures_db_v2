@@ -1,14 +1,13 @@
-from    csv         import  reader
-from    datetime    import  datetime
-from    ftplib      import  FTP
-from    json        import  loads
-import  polars      as      pl
-from    time        import  time
-from    typing      import  List
+from    config              import  CONFIG
+from    contract_settings   import  CONTRACT_SETTINGS
+from    csv                 import  reader
+from    datetime            import  datetime
+from    ftplib              import  FTP
+import  polars              as      pl
+from    time                import  time
+from    typing              import  List
 
 
-CONFIG              = loads(open("./config.json", "r").read())
-CONTRACT_SETTINGS   = loads(open("./contract_settings.json", "r").read())
 DATE_FMT            = "%Y-%m-%d"
 ENABLED_FUTS        = {
                         settings["globex"] : settings
@@ -107,8 +106,6 @@ EXPECTED_COLS = [
 
 def get_futs_cols(file: str, rows: List):
 
-    t0 = time()
-
     id_col          = []
     exchange_col    = []
     symbol_col      = []
@@ -194,31 +191,13 @@ def get_futs_cols(file: str, rows: List):
             "oi":           oi_col,
             "dte":          dte_col
         },
-        schema = {
-            "contract_id":  pl.Utf8,
-            "exchange":     pl.Utf8,
-            "name":         pl.Utf8,
-            "month":        pl.Utf8,
-            "year":         pl.Utf8,
-            "date":         pl.Utf8,
-            "open":         pl.Float64,
-            "high":         pl.Float64,
-            "low":          pl.Float64,
-            "settle":       pl.Float64,
-            "volume":       pl.Int64,
-            "oi":           pl.Int64,
-            "dte":          pl.Int64
-        }
+        schema = CONFIG["futs_schema"]
     )
-
-    print(f"{'update_cme.insert_fut_rows':30}{file:30}{time() - t0:0.1f}s")
 
     return df
 
 
 def get_opts_cols(file: str, rows: List):
-
-    t0 = time()
 
     date_col                = []
     name_col                = []
@@ -294,6 +273,7 @@ def get_opts_cols(file: str, rows: List):
             "name":                 name_col,
             "strike":               strike_col,
             "expiry":               expiry_col,
+            "call":                 call_col,
             "last_traded":          last_traded_col,
             "settle":               settle_col,
             "settle_delta":         settle_delta_col,
@@ -307,28 +287,8 @@ def get_opts_cols(file: str, rows: List):
             "underlying_exchange":  underlying_exchange_col,
             "underlying_id":        underlying_id_col
         },
-        schema = {
-            "date":                 pl.Utf8,
-            "name":                 pl.Utf8,
-            "strike":               pl.Float64,
-            "expiry":               pl.Utf8,
-            "last_traded":          pl.Utf8,
-            "settle":               pl.Float64,
-            "settle_delta":         pl.Float64,
-            "high_limit":           pl.Float64,
-            "low_limit":            pl.Float64,
-            "high_bid":             pl.Float64,
-            "low_bid":              pl.Float64,
-            "previous_volume":      pl.Int64,
-            "previous_interest":    pl.Int64,
-            "underlying_symbol":    pl.Utf8,
-            "underlying_exchange":  pl.Utf8,
-            "underlying_id":        pl.Utf8
-
-        }
+        schema = CONFIG["opts_schema"]
     )
-
-    print(f"{'update_cme.insert_opt_rows':30s}{file:30}{time() - t0:0.1f}")
 
     return df
 
@@ -361,29 +321,42 @@ def update(date: str, new: bool):
         
         t1 = time()
 
-        ftp.retrlines(f"RETR {file:30}", rows.append)
+        ftp.retrlines(f"RETR {file}", rows.append)
 
-        print(f"{'RETR':30}{file:30}{time() - t1:0.1f}")
+        print(f"{'RETR':30}{file:30}{time() - t1:0.1f}s")
 
         if rows[0].split(",") != EXPECTED_COLS:
 
             print(f"error: unexpected column format in {file}")
 
-        cols = get_futs_cols(futs_db, file, rows)
+        t2 = time()
+
+        cols = get_futs_cols(file, rows)
         futs_db.extend(cols)
+
+        print(f"{'update_cme.insert_fut_rows':30}{file:30}{time() - t2:0.1f}s")
         
+        t3 = time()
+
         cols = get_opts_cols(file, rows)
         opts_db.extend(cols)
 
+        print(f"{'update_cme.insert_opt_rows':30s}{file:30}{time() - t3:0.1f}s")
+
         pass
 
-    futs_db = futs_db.unique(maintain_order = True)
+    t5 = time()
+
+    futs_db = futs_db.unique(maintain_order = True).sort([ "contract_id", "date" ])
     futs_db.write_parquet(CONFIG["futs_db"])
 
-    opts_db = opts_db.unique(maintain_order = True)
+    print(f"{'update_cme:write_futs_db':30s}{file:30}{time() - t5:0.1f}s")
+
+    t6 = time()
+
+    opts_db = opts_db.unique(maintain_order = True).sort([ "date", "name", "expiry", "strike" ])
     opts_db.write_parquet(CONFIG["opts_db"])
 
-    print(f"{'update_cme.update':30}{time() - t0:0.1f}s")
+    print(f"{'update_cme:write_opts_db':30s}{file:30}{time() - t6:0.1f}s")
 
-    pass
-        
+    print(f"{'update_cme.update':30}{time() - t0:0.1f}s")
