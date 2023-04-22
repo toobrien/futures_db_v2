@@ -3,7 +3,7 @@ A new version of the [`futures_db`](https://www.github.com/toobrien/futures_db) 
 The only important differences between the two databases, apart from the smaller size and higher speed of access within python programs, are:
 
 - The new database is split into two separate files; a futures file replaces the old `ohlc` table and an options file for the `cme_opts` table.
-- The fundamental tables have been discarded. I made minimal progress implementing them, and what little I did add was easy to pull from the EIA API anyway.
+- The spot table has been discarded. I made minimal progress implementing this table, and what little I did add was easy to pull from the EIA API anyway.
 - The `metadata` table is also gone. Rather than storing the first and last trading dates for each contract in this extra table (which was only used to calculate the days to expiration), I have added a column for "days to expiration" to directly into the futures schema.
 
 The third point indicates the only change to the schema of either table, an addition of a new "days to expiration" column. The options table is exactly the same. The `contract_id` field has been kept to join the futures and options files. The `contract_id` in the futures file joins on `underlying_id` in the options file.
