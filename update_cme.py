@@ -146,8 +146,6 @@ def get_futs_cols(file: str, rows: List):
 
             month = MONTHS[int(delivery[4:6])]
 
-        # propagate settle for contracts taht didn't trade
-
         scale = ENABLED_FUTS[symbol]["scale"]
 
         id          = f"{exchange}_{symbol}{month}{year}"

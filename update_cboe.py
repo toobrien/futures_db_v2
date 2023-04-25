@@ -92,11 +92,14 @@ def update(date: str):
             continue
         
         expiry  = settle_row[2]
-        res     = get(vx_url_template.format(settle_row[2]))
+        url     = vx_url_template.format(settle_row[2])
+        res     = get(url)
 
         if res.status_code != 200:
 
-            print(f"error: vx file download failed {res.status_code}")
+            print(f"error: vx file download failed {res.status_code}: {url}")
+
+            continue
 
         # vx record:
 
