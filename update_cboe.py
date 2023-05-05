@@ -72,7 +72,7 @@ def update(date: str):
 
     txt         = res.text
     settle_rows = reader(txt.splitlines())
-    headers     = next(settle_rows) # skip header
+    headers     = next(settle_rows)         # skip header
 
     if headers != EXPECTED_SETTLEMENT_COLS:
 

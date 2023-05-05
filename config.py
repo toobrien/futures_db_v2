@@ -19,6 +19,12 @@ CONFIG = {
     ],
     "cboe_settlements_url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt={0}",
     "vx_url":               "https://cdn.cboe.com/data/us/futures/market_statistics/historical_data/VX/VX_{0}.csv",
+    "spot": {
+        "VX": {
+            "url":  "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+            "file": "./VX.parquet"
+        }
+    },
     "futs_schema": {
         "contract_id":  pl.Utf8,
         "exchange":     pl.Utf8,
