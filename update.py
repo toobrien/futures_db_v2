@@ -1,6 +1,7 @@
 from    datetime    import datetime
 import  update_cboe
 import  update_cme
+import  update_spot
 from    sys         import argv
 from    time        import time
 
@@ -29,5 +30,6 @@ if __name__ == "__main__":
 
     update_cboe.update(date)
     update_cme.update(cme_date, new)
+    update_spot()
 
     print(f"{'update':30s}{date:30s}{time() - t0:0.1f}")
