@@ -1,13 +1,12 @@
-from    json    import  dumps
-import  polars  as      pl
-from    sys     import  argv
-from    time    import  time
-from    v1_util import  get_term_days
+import  polars          as      pl
+from    sys             import  argv
+from    time            import  time
+from    ..reports.util  import  get_groups
 
 
 def get_latest(symbol:str, start:str, end:str):
 
-    term_days = get_term_days(symbol, start, end)
+    term_days = get_groups(symbol, start, end)
 
     # check records for most recent day
 

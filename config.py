@@ -19,6 +19,13 @@ CONFIG = {
     ],
     "cboe_settlements_url": "https://www.cboe.com/us/futures/market_statistics/settlement/csv?dt={0}",
     "vx_url":               "https://cdn.cboe.com/data/us/futures/market_statistics/historical_data/VX/VX_{0}.csv",
+    "wasde": {
+        "db_path":      "./wasde.parquet",
+        "base_url":     "https://www.usda.gov",
+        "links":        "/oce/commodity-markets/wasde/historical-wasde-report-data",
+        "new_pattern":  "/sites/default/files/documents/oce-wasde-report-data-\d{4}-\d{2}.csv",
+        "arch_pattern": "/sites/default/files/documents/oce-wasde-report-data-\d{4}-\d{2}-to-\d{4}-\d{2}.zip"
+    },
     "spot": {
         "VX": {
             "url":  "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
@@ -58,5 +65,23 @@ CONFIG = {
         "underlying_symbol":    pl.Utf8,
         "underlying_exchange":  pl.Utf8,
         "underlying_id":        pl.Utf8
+    },
+    "wasde_schema": {
+        "WasdeNumber":              pl.Int64,
+        "ReportDate":               pl.Utf8,
+        "ReportTitle":              pl.Utf8,
+        "Attribute":                pl.Utf8,
+        "ReliabilityProjection":    pl.Utf8,
+        "Commodity":                pl.Utf8,
+        "Region":                   pl.Utf8,
+        "MarketYear":               pl.Utf8,
+        "ProjEstFlag":              pl.Utf8,
+        "AnnualQuarterFlag":        pl.Utf8,
+        "Value":                    pl.Float64,
+        "Unit":                     pl.Utf8,
+        "ReleaseDate":              pl.Utf8,
+        "ReleaseTime":              pl.Utf8,
+        "ForecastYear":             pl.Int64,
+        "ForecastMonth":            pl.Int64
     }
 }

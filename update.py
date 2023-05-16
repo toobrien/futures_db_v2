@@ -1,9 +1,10 @@
-from    datetime    import datetime
+from    datetime        import datetime
 import  update_cboe
 import  update_cme
 import  update_spot
-from    sys         import argv
-from    time        import time
+import  update_wasde
+from    sys             import argv
+from    time            import time
 
 # example usage:
 #
@@ -31,5 +32,6 @@ if __name__ == "__main__":
     update_cboe.update(date)
     update_cme.update(cme_date, new)
     update_spot.update()
+    update_wasde.update()
 
     print(f"{'update':30s}{date:30s}{time() - t0:0.1f}")
